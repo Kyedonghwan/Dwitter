@@ -1,0 +1,15 @@
+{
+  "name": "dwitter",
+  "version": "1.0.0",
+  "description": "> React & express SNS Application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "client-build": "cd client && npm ci && npm run build",
+    "move-build": "cd client && mv build ../server/dist/build",
+    "server-build": "cd server && npm ci && npm run build",
+    "start": "npm run client-build && npm run server-build && npm run move-build && cd server && npm run start"
+  },
+  "author": "",
+  "license": "ISC"
+}
