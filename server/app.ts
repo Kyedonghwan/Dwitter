@@ -1,14 +1,12 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import path from 'path';
 import cors from 'cors';
 
 import todos from "./models/todo";
 import todo from './models/todo';
-
-dotenv.config({ path: path.resolve(__dirname, './.env') });
 
 const app = express();
 
@@ -22,10 +20,8 @@ app.use(bodyParser.json());
 
 //mongoose setup
 mongoose.Promise = global.Promise;
-mongoose.connect("mongodb://127.0.0.1:27017/todos");
-
+mongoose.connect("mongodb://127.0.0.1:27017");
 let db = mongoose.connection;
-
 db.on('error', console.error);
 db.once('open', () => {
   console.log("connected to mongod server");
