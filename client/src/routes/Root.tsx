@@ -3,6 +3,6 @@ import TodoList from '../components/todoList';
 
 export default function Root () {
   return (<div>
-    <TodoList />
+    layout.
   </div>)
 }
