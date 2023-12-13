@@ -5,20 +5,7 @@ import Root from './routes/Root';
 import CreateUser from './routes/create-account';
 import TodoList from './components/todoList';
 
-const router = createBrowserRouter([{
-  path: "/",
-  element: <Root />,
-  children: [
-    {
-      path: "",
-      element: <TodoList />,
-    },
-    {
-      path: "create-user",
-      element: <CreateUser />,
-    }
-  ]
-},
+const router = createBrowserRouter([
   {
     path: "/create-user",
     element: <CreateUser />

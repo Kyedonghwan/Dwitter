@@ -11,6 +11,11 @@ const CreateUser = () => {
   const [warn3, setWarn3] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const onChangeTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setIntroduce(value);
+  }
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
@@ -23,25 +28,26 @@ const CreateUser = () => {
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
     if(e.target.name === "id") {
-      if(!(value.length <20 || value.length >= 6)) {
+      setId(value);
+      if(!(value.length <20 && value.length >= 6)) {
         setWarn1("아이디는 6자리 이상이거나 20자리 이하이어야 합니다.");
       }else {
-        setId(value);
+        setWarn1("");
       }
     }else if(e.target.name === "password") {
-      if(!(value.length <20 || value.length >= 6)) {
+      setPassword(value);
+      if(!(value.length <20 && value.length >= 6)) {
         setWarn2("비밀번호는 6자리 이상이거나 20자리 이하이어야 합니다.");
       }else {
-        setPassword(value);
-      }
-    }else if(e.target.name === "nickname") {
-      if(!(value.length <20 || value.length >= 6)) {
-        setWarn3("닉네임은 6자리 이상이거나 20자리 이하이어야 합니다.")
-      }else {
-        setNickname(value);
+        setWarn2("");
       }
     }else {
-      setIntroduce(introduce);
+      setNickname(value);
+      if(!(value.length <20 && value.length >= 6)) {
+        setWarn3("닉네임은 6자리 이상이거나 20자리 이하이어야 합니다.")
+      }else {
+        setWarn3("");
+      }
     }
   }
 
@@ -55,7 +61,8 @@ const CreateUser = () => {
       <div style={{ color: "red"}} >{warn2}</div>
       <label htmlFor="nickname">닉네임</label>
       <input onChange={onChange} type="text" name="nickname" placeholder="사용하실 닉네임을 입력해주세요" value={nickname}></input>
-      <textarea placeholder="자기소개를 입력해주세요" value={introduce}/>
+      <label htmlFor="introduce">닉네임</label>
+      <textarea onChange={onChangeTextarea} name="introduce" placeholder="자기소개를 입력해주세요" value={introduce}/>
       <div style={{ color: "red"}} >{warn3}</div>
       <input type="submit" value={isLoading ? "제출 중 ..." : "제출하기"} />
     </form>
