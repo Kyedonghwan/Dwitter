@@ -4,9 +4,9 @@ import mongoose from 'mongoose';
 import 'dotenv/config';
 import path from 'path';
 import cors from 'cors';
-
-import todos from "./models/todo";
-import todo from './models/todo';
+import Todos from "./models/Todo";
+import rootRouter from './routers/rootRouter';
+import { createUserController, loginUserController } from './controllers/userController';
 
 const app = express();
 
@@ -31,22 +31,28 @@ app.listen(3001, () => {
   console.log(`Example app listening on port 3001`)
 })
 
-app.get("/api/get", (req, res) => {
-  res.send("donghwan");
+app.get("/api/get", async (req, res) => {
+  const findTodos = await Todos.find();
+  res.send(findTodos);
+  console.log(findTodos);
 });
 
 app.post("/api/post", async (req,res) => {
   const content = req.body.content;
-  const newTodos = new todos({
+  const newTodos = new Todos({
+    id: Date.now(),
     content: content
   });
 
   try {
     await newTodos.save();
-    console.log(todos.find());
-    console.log(newTodos);
-    console.log("complete");
+    res.send("complete");
   } catch(e) {
-    console.log(e);
+    res.send(e);
   }
 })
+
+app.use("/api", rootRouter);
+
+app.post("/api/user/create", createUserController);
+app.post("/api/user/login", loginUserController);
