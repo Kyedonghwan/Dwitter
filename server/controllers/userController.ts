@@ -1,3 +1,4 @@
+import { NextFunction } from "express";
 import User from "../models/User";
 
 export async function createUserController (req:any, res:any) {
@@ -5,7 +6,7 @@ export async function createUserController (req:any, res:any) {
     id: req.body.id,
     password: req.body.password,
     nickname: req.body.nickname,
-    introduce: req.body.introduce,
+    introduce: req.body.introduce
   });
 
   try {
@@ -27,16 +28,35 @@ export async function loginUserController (req:any, res:any) {
         message: "id와 일치하는 유저가 없습니다."
       })
     }
-    docs.comparePassword(req.body.password, (err:any, isMatch:any) => {
-      (!isMatch)
+    docs.comparePassword(password, (err:any, isMatch:any) => {
+      if(!isMatch)
         return res.json({
           loginSuccess: false,
           message: "비밀번호가 다릅니다."
         });
-    })
-    docs.generateToken((err:any, user:any) => {
-      if(err) return res.status(400).send(err);
-      res.cookie("x_auth", user.token).status(200).json({loginSuccess: true, useId: user._id})
+        if(err){
+          console.log(err);
+        }
+      const token = docs.generateToken();
+      res.cookie("x_auth", token).status(200).json({loginSuccess: true});
     })
   })
+}
+
+export async function isLoginPossibleMiddleware (req: any, res: any, next:NextFunction) {
+  console.log(req.cookies.x_auth);
+  const token =req.cookies.x_auth;
+  User.findByToken(token, (err, user) => {
+    if(err) throw err;
+    if(!user) return res.json({
+      isAuth: false,
+      error: true
+    })
+    req.user = user;
+    next();
+  });
+}
+
+export async function isLoginPossibleController (req: any, res: any) {
+  res.send("인가 OK");
 }

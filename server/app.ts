@@ -7,6 +7,7 @@ import cors from 'cors';
 import Todos from "./models/Todo";
 import rootRouter from './routers/rootRouter';
 import { createUserController, loginUserController } from './controllers/userController';
+import cookies from "cookie-parser";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use('/', express.static("build"));
 //body parser
 app.use(bodyParser.urlencoded({ extended: true}));
 app.use(bodyParser.json());
+app.use(cookies());
 
 //mongoose setup
 mongoose.Promise = global.Promise;

@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-const userSchema = new mongoose.Schema<IUser>({
+const userSchema = new mongoose.Schema({
   id: { type: String, required:true },
   password: { type: String, required:true },
   nickname: { type: String },
@@ -16,8 +16,15 @@ export interface IUser extends Document {
   nickname: string;
   introduce: string;
   token: string;
+}
+
+export interface IUserDocument extends Document, IUser {
   comparePassword : (password: string, next: (err: Error | undefined, isMatch: boolean) => void ) => void;
-  generateToken : (callback: (err: any| undefined, success: any) => void ) => void;
+  generateToken : () => any;
+}
+
+export interface IUserModel extends Model<IUserDocument> {
+  findByToken: (token: any, cb: (err: Error | undefined, isMatch: boolean) => void ) => void ;
 }
 
 const saltRounds = 10;
@@ -45,15 +52,20 @@ userSchema.methods.comparePassword = function (plainPassword:string, callback: a
   });
 }
 
-userSchema.methods.generateToken = function (callback :any) {
+userSchema.methods.generateToken = function () {
   const user = this;
   const token = jwt.sign(user._id.toHexString(), "secretToken");
-  user.token = token;
-  
-  user.save(function(err:any, user:any){
-    if(err) return callback(err);
-    callback(null, user);
+  return token;
+}
+
+userSchema.statics.findByToken = async function (token:any, cb:any) {
+  const user = this;
+  jwt.verify(token, "secretToken", function (err:any, decoded:any) {
+    if(!decoded) cb(err);
+    user.findOne({ _id :decoded }).then( (docs:any) => {
+      cb(null, docs);
+    })
   })
 }
 
-export default mongoose.model('User', userSchema);
+export default mongoose.model<IUserDocument, IUserModel>('User', userSchema);
