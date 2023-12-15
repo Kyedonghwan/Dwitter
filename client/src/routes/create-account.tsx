@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState } from 'react';
+import style from './CreateAccount.module.scss';
 
 const CreateUser = () => {
   const [id, setId] = useState("");
@@ -52,7 +53,7 @@ const CreateUser = () => {
   }
 
   return (
-    <form onSubmit={onSubmit}>
+    <form className={style.form} onSubmit={onSubmit}>
       <label htmlFor="id">ID</label>
       <input onChange={onChange} name="id" type="text" placeholder="ID를 입력하세요" value={id} required/>
       <div style={{ color: "red"}} >{warn1}</div>
