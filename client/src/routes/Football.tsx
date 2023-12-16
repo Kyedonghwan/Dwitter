@@ -6,6 +6,7 @@ import classnames from 'classnames';
 export default function Football () {
   const [isLoading, setIsLoading] = useState(true);
   const [LeagueList, setLeagueList] = useState<any[]>([]);
+  const [order, setOrder] = useState(0);
   const [selectLeagueList, setSelectLeagueList] = useState<any[]>([]);
 
   useEffect(() => {
@@ -33,23 +34,51 @@ const fetchLeagueData = async () => {
 }
 
 const onClickLeague = async (e:React.MouseEvent) => {
+  setIsLoading(true);
   const leagueId = e.currentTarget?.id;
-  const res = await axios(`https://v3.football.api-sports.io/teams?league=${leagueId}&season=2020`, {
+  console.log(leagueId);
+  const res = await axios(`https://v3.football.api-sports.io/teams?league=${leagueId}&season=2019`, {
 	"method": "GET",
 	"headers": {
 		"x-rapidapi-host": "v3.football.api-sports.io",
 		"x-rapidapi-key": "2969331eb0477f82f87ccdbd49f51c09"
 	}
   });
-  let array:any = [];
-  let i = 0;
-  res.data.response.map(
-    (item:any) => {
-      array[i] = item;
-      i++;
+  let array:any[] = res.data.response;
+  let arr:any[] = [];
+
+  const sortOrderFunc = () => {
+    arr.sort((a:any, b:any) => {
+      const aScore = a.fixtures.wins.total*3 + a.fixtures.draws.total;
+      const bScore = b.fixtures.wins.total*3 + b.fixtures.draws.total;
+  
+      if(aScore > bScore) return 1;
+      else if( aScore === bScore) return 0;
+      else return -1;
+    })
+  }
+
+  const fetchDetailStatistics = async (leagueId: string, teamId:string) => {
+    const res = await axios(`https://v3.football.api-sports.io/teams/statistics?team=${teamId}&league=${leagueId}&season=2019`, {
+    "method": "GET",
+    "headers": {
+      "x-rapidapi-host": "v3.football.api-sports.io",
+      "x-rapidapi-key": "2969331eb0477f82f87ccdbd49f51c09"
     }
-  )
-  setSelectLeagueList(array);
+    });
+    
+    arr.push(res.data.response);
+  }
+
+  console.log(array);
+  for(let i =0 ; i< 5; i++) {
+    fetchDetailStatistics(leagueId, array[i].team.id);
+  }
+
+  sortOrderFunc();
+  console.log(arr);
+  setSelectLeagueList(arr);
+  setIsLoading(false);
 }
 
   return (
@@ -70,25 +99,80 @@ const onClickLeague = async (e:React.MouseEvent) => {
           })
         }
         </ul>
-        <ul className={style.select_league_list}>
-          {
+        <table summary="팀 순위">
+          <caption>팀 순위</caption>
+          <colgroup>
+            <col width="45" />
+            <col width="*" />
+            <col width="80" />
+            <col width="80" />
+            <col width="80" />
+            <col width="80" />
+            <col width="80" />
+            <col width="80" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">
+                순위
+              </th>
+              <th scope="col">
+                팀
+              </th>
+              <th scope="col">
+                경기수
+              </th>
+              <th scope="col">
+                승점
+              </th>
+              <th scope="col">
+                승
+              </th>
+              <th scope="col">
+                무
+              </th>
+              <th scope="col">
+                패
+              </th>
+              <th scope="col">
+                득점
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {
             selectLeagueList.map(item => {
-              const team = item.team;
-              const venue = item.venue;
+              const { team : { name}} = item;
               return (
-                <li key={team.id} className={style.team}>
-                  <button id={team.id} type="button" className ={classnames(style.btn , "ellipsis")} style={{background: `url(${team.logo}) no-repeat`, backgroundSize: "contain"}}>
-                    {team.name}
-                  </button>
-                </li>
+                <tr>
+                  <td>1</td>
+                  <td >{name}
+                  </td>
+                  <td>
+                    {item.fixtures.played.total}
+                  </td>
+                  <td>
+                    {item.fixtures.wins.total*3 + item.fixtures.draws.total}
+                  </td>
+                  <td>
+                    {item.fixtures.wins}
+                  </td>
+                  <td>
+                    {item.fixtures.draws}
+                  </td>
+                  <td>
+                    {item.fixtures.loses}
+                  </td>
+                  <td>
+                    {item.goals.for.total.total}
+                  </td>
+                </tr>
               )
             })
           }
-        </ul>
+          </tbody>
+        </table>
       </div>
-      <ul>
-      
-    </ul>
     <div style={{color: "red"}}>{isLoading? "로딩중" : "로딩끝"}</div>
     </>
   )
