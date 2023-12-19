@@ -5,11 +5,10 @@ import classnames from 'classnames';
 
 export default function Football () {
   const [isLoading, setIsLoading] = useState(true);
-  const [LeagueList, setLeagueList] = useState<any[]>([]);
-  const [order, setOrder] = useState(0);
-  const [selectLeagueList, setSelectLeagueList] = useState<any[]>([]);
+  const [leagueList, setLeagueList] = useState<any[]>([]);
+  const [leagueRenderJsx, setLeagueRenderJsx] = useState<any[]>([]);
 
-  useEffect(() => {
+    useEffect(() => {
     fetchLeagueData();
   }, []);
 
@@ -36,7 +35,6 @@ const fetchLeagueData = async () => {
 const onClickLeague = async (e:React.MouseEvent) => {
   setIsLoading(true);
   const leagueId = e.currentTarget?.id;
-  console.log(leagueId);
   const res = await axios(`https://v3.football.api-sports.io/teams?league=${leagueId}&season=2019`, {
 	"method": "GET",
 	"headers": {
@@ -52,10 +50,41 @@ const onClickLeague = async (e:React.MouseEvent) => {
       const aScore = a.fixtures.wins.total*3 + a.fixtures.draws.total;
       const bScore = b.fixtures.wins.total*3 + b.fixtures.draws.total;
   
-      if(aScore > bScore) return 1;
+      if(aScore > bScore) return -1;
       else if( aScore === bScore) return 0;
-      else return -1;
+      else return 1;
     })
+  }
+
+  const leagueRendering = () => {
+    const renderArr = [];
+    for(let index in arr){
+      const item = arr[index];
+      renderArr.push(<tr>
+        <td>{Number(index)+1}</td>
+        <td >{item.team.name}
+        </td>
+        <td>
+          {item.fixtures.played.total}
+        </td>
+        <td>
+          {item.fixtures.wins.total*3 + item.fixtures.draws.total}
+        </td>
+        <td>
+          {item.fixtures.wins.total}
+        </td>
+        <td>
+          {item.fixtures.draws.total}
+        </td>
+        <td>
+          {item.fixtures.loses.total}
+        </td>
+        <td>
+          {item.goals.for.total.total}
+        </td>
+      </tr>);
+    }
+    return renderArr;
   }
 
   const fetchDetailStatistics = async (leagueId: string, teamId:string) => {
@@ -70,14 +99,12 @@ const onClickLeague = async (e:React.MouseEvent) => {
     arr.push(res.data.response);
   }
 
-  console.log(array);
   for(let i =0 ; i< 5; i++) {
-    fetchDetailStatistics(leagueId, array[i].team.id);
+    await fetchDetailStatistics(leagueId, array[i].team.id);
   }
 
   sortOrderFunc();
-  console.log(arr);
-  setSelectLeagueList(arr);
+  setLeagueRenderJsx(leagueRendering);
   setIsLoading(false);
 }
 
@@ -87,7 +114,7 @@ const onClickLeague = async (e:React.MouseEvent) => {
         <h1 className={style.title}>조회하시려는 리그를 선택해주세요.</h1>
         <ul className={style.leagues_list}>
         {
-          LeagueList.map(item => {
+          leagueList.map(item => {
             const league = item.league;
             return (
               <li key={league.id} className={style.league}>
@@ -99,7 +126,7 @@ const onClickLeague = async (e:React.MouseEvent) => {
           })
         }
         </ul>
-        <table summary="팀 순위">
+        <table summary="팀 순위" cellSpacing={0} border={1}>
           <caption>팀 순위</caption>
           <colgroup>
             <col width="45" />
@@ -141,35 +168,8 @@ const onClickLeague = async (e:React.MouseEvent) => {
           </thead>
           <tbody>
             {
-            selectLeagueList.map(item => {
-              const { team : { name}} = item;
-              return (
-                <tr>
-                  <td>1</td>
-                  <td >{name}
-                  </td>
-                  <td>
-                    {item.fixtures.played.total}
-                  </td>
-                  <td>
-                    {item.fixtures.wins.total*3 + item.fixtures.draws.total}
-                  </td>
-                  <td>
-                    {item.fixtures.wins}
-                  </td>
-                  <td>
-                    {item.fixtures.draws}
-                  </td>
-                  <td>
-                    {item.fixtures.loses}
-                  </td>
-                  <td>
-                    {item.goals.for.total.total}
-                  </td>
-                </tr>
-              )
-            })
-          }
+              leagueRenderJsx
+            }
           </tbody>
         </table>
       </div>

@@ -10,9 +10,9 @@ const userSchema = new mongoose.Schema({
   token: { type: String }
 });
 
-export interface IUser extends Document {
+export interface IUser {
   id: string;
-  password: string
+  password: string;
   nickname: string;
   introduce: string;
   token: string;
