@@ -3,10 +3,22 @@ import React, { useEffect, useState } from "react";
 import style from './football.module.scss';
 import classnames from 'classnames';
 
+const IS_TEAMS = "is_teams";
+const IS_PLAYERS = "is_players";
+const IS_TOP_SCORERS = "is_top_scorers";
+
 export default function Football () {
   const [isLoading, setIsLoading] = useState(true);
   const [leagueList, setLeagueList] = useState<any[]>([]);
-  const [leagueRenderJsx, setLeagueRenderJsx] = useState<any[]>([]);
+  const [players, setPlayers] = useState<any[]>([]);
+  const [topScorerPlayers, setTopScorerPlayers] = useState<any[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
+  const [whichClick ,setWhichClick] = useState("");
+  const [leagueId, setLeagueId] = useState("");
+
+  const IS_TOP_SCORERS_API = `https://v3.football.api-sports.io/players/topscorers?league=${leagueId}&season=2021`
+  const IS_PLAYERS_API = `https://v3.football.api-sports.io/players?league=${leagueId}&season=2021`;
+  const IS_TEAMS_API = `https://v3.football.api-sports.io/teams?league=${leagueId}&season=2021`;
 
     useEffect(() => {
     fetchLeagueData();
@@ -32,86 +44,56 @@ const fetchLeagueData = async () => {
   setLeagueList(array);
 }
 
-const onClickLeague = async (e:React.MouseEvent) => {
-  setIsLoading(true);
-  const leagueId = e.currentTarget?.id;
-  const res = await axios(`https://v3.football.api-sports.io/teams?league=${leagueId}&season=2019`, {
-	"method": "GET",
-	"headers": {
-		"x-rapidapi-host": "v3.football.api-sports.io",
-		"x-rapidapi-key": "2969331eb0477f82f87ccdbd49f51c09"
-	}
-  });
-  let array:any[] = res.data.response;
-  let arr:any[] = [];
-
-  const sortOrderFunc = () => {
-    arr.sort((a:any, b:any) => {
-      const aScore = a.fixtures.wins.total*3 + a.fixtures.draws.total;
-      const bScore = b.fixtures.wins.total*3 + b.fixtures.draws.total;
-  
-      if(aScore > bScore) return -1;
-      else if( aScore === bScore) return 0;
-      else return 1;
-    })
-  }
-
-  const leagueRendering = () => {
-    const renderArr = [];
-    for(let index in arr){
-      const item = arr[index];
-      renderArr.push(<tr>
-        <td>{Number(index)+1}</td>
-        <td >{item.team.name}
-        </td>
-        <td>
-          {item.fixtures.played.total}
-        </td>
-        <td>
-          {item.fixtures.wins.total*3 + item.fixtures.draws.total}
-        </td>
-        <td>
-          {item.fixtures.wins.total}
-        </td>
-        <td>
-          {item.fixtures.draws.total}
-        </td>
-        <td>
-          {item.fixtures.loses.total}
-        </td>
-        <td>
-          {item.goals.for.total.total}
-        </td>
-      </tr>);
-    }
-    return renderArr;
-  }
-
-  const fetchDetailStatistics = async (leagueId: string, teamId:string) => {
-    const res = await axios(`https://v3.football.api-sports.io/teams/statistics?team=${teamId}&league=${leagueId}&season=2019`, {
+const fetchData = async (api:string) => {
+  const { data: { response }} = await axios(api , {
     "method": "GET",
     "headers": {
       "x-rapidapi-host": "v3.football.api-sports.io",
       "x-rapidapi-key": "2969331eb0477f82f87ccdbd49f51c09"
     }
     });
-    
-    arr.push(res.data.response);
-  }
+  return response;
+}
 
-  for(let i =0 ; i< 5; i++) {
-    await fetchDetailStatistics(leagueId, array[i].team.id);
+const render = async () => {
+  switch(whichClick) {
+    case IS_TOP_SCORERS:
+      setTopScorerPlayers(await fetchData(IS_TOP_SCORERS_API));
+      break;
+    case IS_TEAMS:
+      setTeams(await fetchData(IS_TEAMS_API));
+      break;
+    case IS_PLAYERS:
+      setPlayers(await fetchData(IS_PLAYERS_API));
+      break;
+    default:
+      window.confirm("분류를 선택하세요!");
   }
+}
 
-  sortOrderFunc();
-  setLeagueRenderJsx(leagueRendering);
+const onClickLeague = async (e:React.MouseEvent) => {
+  setIsLoading(true);
+  setLeagueId(e.currentTarget?.id);
+
+  await render();
+
   setIsLoading(false);
 }
 
   return (
     <>
       <div className={style.total_wrap}>  
-        <h1 className={style.title}>조회하시려는 리그를 선택해주세요.</h1>
+        <h1 className={style.title}>2021시즌 원하시는 리그를 선택해주세요.</h1>
+        <div>
+          <button type="button" onClick={async ()=>{
+            setWhichClick(IS_PLAYERS); 
+            }}>리그별 선수</button>
+          <button type="button" onClick={async ()=>{
+            setWhichClick(IS_TEAMS);}}>리그별 팀</button>
+          <button type="button" onClick={async ()=>{
+            setWhichClick(IS_TOP_SCORERS);
+            ;}}>득점 순위</button>
+        </div>
         <ul className={style.leagues_list}>
         {
           leagueList.map(item => {
@@ -129,9 +111,7 @@ const onClickLeague = async (e:React.MouseEvent) => {
         <table summary="팀 순위" cellSpacing={0} border={1}>
           <caption>팀 순위</caption>
           <colgroup>
-            <col width="45" />
-            <col width="*" />
-            <col width="80" />
+            <col width="200" />
             <col width="80" />
             <col width="80" />
             <col width="80" />
@@ -141,34 +121,67 @@ const onClickLeague = async (e:React.MouseEvent) => {
           <thead>
             <tr>
               <th scope="col">
-                순위
+                { whichClick === IS_TEAMS ? "팀명": "이름"}
               </th>
               <th scope="col">
-                팀
+                { whichClick === IS_TEAMS ? "설립연도" : "나이"}
               </th>
               <th scope="col">
-                경기수
+                { whichClick === IS_TEAMS ? "로고" : "국적"}
               </th>
               <th scope="col">
-                승점
+                { whichClick === IS_TEAMS ? "경기장" : "키"}
               </th>
               <th scope="col">
-                승
+                { whichClick === IS_TEAMS ? "연고지" : "몸무게"}
               </th>
               <th scope="col">
-                무
-              </th>
-              <th scope="col">
-                패
-              </th>
-              <th scope="col">
-                득점
+                { whichClick === IS_TEAMS ? "표면" : "프로필"}
               </th>
             </tr>
           </thead>
           <tbody>
             {
-              leagueRenderJsx
+              topScorerPlayers.map((item) => {
+                return (
+                  <tr>
+                    <td>{item.player.name}</td>
+                    <td>{item.player.age}</td>
+                    <td>{item.player.nationality}</td>
+                    <td>{item.player.height}</td>
+                    <td>{item.player.weight}</td>
+                    <td><img src={item.player.photo} /></td>
+                  </tr>
+                )
+              })
+            }
+            {
+              players.map((item) => {
+                return (
+                  <tr>
+                    <td>{item.player.name}</td>
+                    <td>{item.player.age}</td>
+                    <td>{item.player.nationality}</td>
+                    <td>{item.player.height}</td>
+                    <td>{item.player.weight}</td>
+                    <td><img src={item.player.photo} /></td>
+                  </tr>
+                )
+              })
+            }
+            {
+              teams.map((item) => {
+                return (
+                  <tr>
+                    <td>{item.team.name}</td>
+                    <td>{item.team.founded}</td>
+                    <td><img src={item.team.logo} /></td>
+                    <td>{item.venue.name}</td>
+                    <td>{item.venue.city}</td>
+                    <td><img src={item.venue.surface} /></td>
+                  </tr>
+                )
+              })
             }
           </tbody>
         </table>
