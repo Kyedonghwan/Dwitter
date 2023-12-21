@@ -24,6 +24,10 @@ export default function Football () {
     fetchLeagueData();
   }, []);
 
+  useEffect(() => {
+    render();
+  }, [leagueId]);
+
 const fetchLeagueData = async () => {
   const res = await axios("https://v3.football.api-sports.io/leagues", {
 	"method": "GET",
@@ -74,9 +78,9 @@ const render = async () => {
 const onClickLeague = async (e:React.MouseEvent) => {
   setIsLoading(true);
   setLeagueId(e.currentTarget?.id);
-
-  await render();
-
+  setTeams([]);
+  setPlayers([]);
+  setTopScorerPlayers([]);
   setIsLoading(false);
 }
 
