@@ -47,6 +47,7 @@
   flex-wrap: nowrap;
 
   .btn {
+    position: relative;
     width: 150px;
     margin-right: 10px;
     line-height: 50px;
@@ -63,8 +64,9 @@
         bottom: 0;
         right: 0;
         left: 0;
-        border: 1px solid red;
+        border: 2px solid red;
         border-radius: inherit;
+        color: #222;
         content: "";
       }
     }

@@ -15,6 +15,7 @@ export default function Football () {
   const [teams, setTeams] = useState<any[]>([]);
   const [whichClick ,setWhichClick] = useState("");
   const [leagueId, setLeagueId] = useState("");
+  const leagueDomId = useRef("ad");
   
 
   const useDidMountEffect = (func:any, deps:any) => {
@@ -87,6 +88,8 @@ const render = async () => {
 }
 
 const onClickLeague = async (e:React.MouseEvent) => {
+  leagueDomId.current = e.currentTarget?.id;
+  console.log(leagueDomId);
   setIsLoading(true);
   console.log("##");
   if(leagueId!==e.currentTarget?.id){
@@ -104,12 +107,12 @@ const onClickLeague = async (e:React.MouseEvent) => {
       <div className={style.total_wrap}>  
         <h1 className={style.title}>2021시즌 원하시는 리그를 선택해주세요.</h1>
         <div className={style.select_league_list}>
-          <button type="button" className={style.btn} onClick={async ()=>{
+          <button type="button" className={classnames(style.btn, { [style.is_selected] : whichClick === IS_PLAYERS })} onClick={async ()=>{
             setWhichClick(IS_PLAYERS); 
             }}>리그별 선수</button>
-          <button type="button" className={style.btn} onClick={async ()=>{
+          <button type="button" className={classnames(style.btn, { [style.is_selected] : whichClick === IS_TEAMS })} onClick={async ()=>{
             setWhichClick(IS_TEAMS);}}>리그별 팀</button>
-          <button type="button" className={style.btn} onClick={async ()=>{
+          <button type="button" className={classnames(style.btn, { [style.is_selected] : whichClick === IS_TOP_SCORERS })} onClick={async ()=>{
             setWhichClick(IS_TOP_SCORERS);
             ;}}>득점 순위</button>
         </div>
@@ -117,9 +120,10 @@ const onClickLeague = async (e:React.MouseEvent) => {
         {
           leagueList.map(item => {
             const league = item.league;
+            console.log(leagueId);
             return (
               <li key={league.id} className={style.league}>
-                <button id={league.id} onClick={onClickLeague} type="button" className ={classnames(style.btn , "ellipsis")} style={{background: `url(${league.logo}) no-repeat`, backgroundSize: "contain"}}>
+                <button id={league.id} onClick={onClickLeague} type="button" className ={classnames(style.btn, "ellipsis", { [style.is_selected] : leagueId === leagueDomId.current })}  style={{background: `url(${league.logo}) no-repeat`, backgroundSize: "contain"}}>
                   {league.name}
                 </button>
               </li>
