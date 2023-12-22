@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import style from './football.module.scss';
 import classnames from 'classnames';
 
@@ -15,6 +15,17 @@ export default function Football () {
   const [teams, setTeams] = useState<any[]>([]);
   const [whichClick ,setWhichClick] = useState("");
   const [leagueId, setLeagueId] = useState("");
+  
+
+  const useDidMountEffect = (func:any, deps:any) => {
+    const didMount = useRef(false);
+
+    useEffect(() => {
+      console.log(didMount.current);
+      if(didMount.current) {console.log("@@");func();}
+      else didMount.current = true;
+    }, deps);
+  }
 
   const IS_TOP_SCORERS_API = `https://v3.football.api-sports.io/players/topscorers?league=${leagueId}&season=2021`
   const IS_PLAYERS_API = `https://v3.football.api-sports.io/players?league=${leagueId}&season=2021`;
@@ -24,7 +35,7 @@ export default function Football () {
     fetchLeagueData();
   }, []);
 
-  useEffect(() => {
+  useDidMountEffect(()=>{
     render();
   }, [leagueId]);
 
@@ -77,24 +88,28 @@ const render = async () => {
 
 const onClickLeague = async (e:React.MouseEvent) => {
   setIsLoading(true);
-  setLeagueId(e.currentTarget?.id);
+  console.log("##");
+  if(leagueId!==e.currentTarget?.id){
+    setLeagueId(e.currentTarget?.id);
+  }else {
+    render();
+  }
   setTeams([]);
   setPlayers([]);
   setTopScorerPlayers([]);
-  setIsLoading(false);
 }
 
   return (
     <>
       <div className={style.total_wrap}>  
         <h1 className={style.title}>2021시즌 원하시는 리그를 선택해주세요.</h1>
-        <div>
-          <button type="button" onClick={async ()=>{
+        <div className={style.select_league_list}>
+          <button type="button" className={style.btn} onClick={async ()=>{
             setWhichClick(IS_PLAYERS); 
             }}>리그별 선수</button>
-          <button type="button" onClick={async ()=>{
+          <button type="button" className={style.btn} onClick={async ()=>{
             setWhichClick(IS_TEAMS);}}>리그별 팀</button>
-          <button type="button" onClick={async ()=>{
+          <button type="button" className={style.btn} onClick={async ()=>{
             setWhichClick(IS_TOP_SCORERS);
             ;}}>득점 순위</button>
         </div>
@@ -182,7 +197,7 @@ const onClickLeague = async (e:React.MouseEvent) => {
                     <td><img src={item.team.logo} /></td>
                     <td>{item.venue.name}</td>
                     <td>{item.venue.city}</td>
-                    <td><img src={item.venue.surface} /></td>
+                    <td>{item.venue.surface}</td>
                   </tr>
                 )
               })

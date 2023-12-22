@@ -15,28 +15,58 @@
   }
 
   .btn {
+    position: relative;
     width: 150px;
+    overflow: hidden;
     line-height: 100px;
     border-radius: 3px;
     color: #000;
+
+    &.is_selected {
+      border: 0;
+      
+      &::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        border: 2px solid red;
+        border-radius: inherit;
+        content: "";
+      }
+    }
   }
 }
 
 .select_league_list {
   display: flex;
-  margin: 0 16px;
+  margin: 0 16px 30px 70px;
   list-style-type: none;
   max-width: 300px;
   flex-wrap: nowrap;
-  
-  .item {
-    margin: 10px;
-  }
 
   .btn {
     width: 150px;
-    line-height: 100px;
+    margin-right: 10px;
+    line-height: 50px;
     border-radius: 3px;
     color: #000;
+    background-color: #fff;
+
+    &.is_selected {
+      border: 0;
+
+      &::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        border: 1px solid red;
+        border-radius: inherit;
+        content: "";
+      }
+    }
   }
 }
