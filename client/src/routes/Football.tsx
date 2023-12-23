@@ -2,6 +2,9 @@ import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import style from './football.module.scss';
 import classnames from 'classnames';
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { createAction } from "../actions/actions";
 
 const IS_TEAMS = "is_teams";
 const IS_PLAYERS = "is_players";
@@ -9,15 +12,16 @@ const IS_TOP_SCORERS = "is_top_scorers";
 
 export default function Football () {
   const [isLoading, setIsLoading] = useState(true);
-  const [leagueList, setLeagueList] = useState<any[]>([]);
   const [players, setPlayers] = useState<any[]>([]);
   const [topScorerPlayers, setTopScorerPlayers] = useState<any[]>([]);
   const [teams, setTeams] = useState<any[]>([]);
   const [whichClick ,setWhichClick] = useState("");
   const [leagueId, setLeagueId] = useState("");
-  const leagueDomId = useRef("ad");
-  
 
+  const dispatch = useDispatch();
+
+  const leagueList = useSelector((state) => state);
+  
   const useDidMountEffect = (func:any, deps:any) => {
     const didMount = useRef(false);
 
@@ -41,23 +45,8 @@ export default function Football () {
   }, [leagueId]);
 
 const fetchLeagueData = async () => {
-  const res = await axios("https://v3.football.api-sports.io/leagues", {
-	"method": "GET",
-	"headers": {
-		"x-rapidapi-host": "v3.football.api-sports.io",
-		"x-rapidapi-key": "2969331eb0477f82f87ccdbd49f51c09"
-	}
-  });
-  let array:any = [];
-  let i = 0;
-  res.data.response.map(
-    (item:any) => {
-      array[i] = item;
-      i++;
-    }
-  )
+  dispatch(await createAction());
   setIsLoading(false);
-  setLeagueList(array);
 }
 
 const fetchData = async (api:string) => {
@@ -88,10 +77,8 @@ const render = async () => {
 }
 
 const onClickLeague = async (e:React.MouseEvent) => {
-  leagueDomId.current = e.currentTarget?.id;
-  console.log(leagueDomId);
   setIsLoading(true);
-  console.log("##");
+  
   if(leagueId!==e.currentTarget?.id){
     setLeagueId(e.currentTarget?.id);
   }else {
@@ -120,10 +107,9 @@ const onClickLeague = async (e:React.MouseEvent) => {
         {
           leagueList.map(item => {
             const league = item.league;
-            console.log(leagueId);
             return (
               <li key={league.id} className={style.league}>
-                <button id={league.id} onClick={onClickLeague} type="button" className ={classnames(style.btn, "ellipsis", { [style.is_selected] : leagueId === leagueDomId.current })}  style={{background: `url(${league.logo}) no-repeat`, backgroundSize: "contain"}}>
+                <button id={league.id} onClick={onClickLeague} type="button" className ={classnames(style.btn, "ellipsis", { [style.is_selected] : leagueId === league.id.toString() })}  style={{background: `url(${league.logo}) no-repeat`, backgroundSize: "contain"}}>
                   {league.name}
                 </button>
               </li>
