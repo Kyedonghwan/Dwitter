@@ -1,17 +1,12 @@
-export default function Reducer (state = [], action:CreateAction) {
+import { CREATE, ILeague, IleagueAction } from "../actions/actions";
+
+const initialState: ILeague[] = [];
+
+export default function leagueReducer (state = initialState, action:IleagueAction) {
   switch (action.type) {
     case CREATE:
       return action.payload
     default:
-      return state;
+      return state
   }
 }
-
-export const CREATE = "create";
-
-export interface CreateAction {
-  type: typeof CREATE;
-  payload: [];
-}
-
-export type TodoActionTypes = CreateAction;

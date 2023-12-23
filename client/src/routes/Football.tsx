@@ -4,7 +4,8 @@ import style from './football.module.scss';
 import classnames from 'classnames';
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { createAction } from "../actions/actions";
+import { createLeagueAction } from "../actions/actions";
+import { RootState } from "../store";
 
 const IS_TEAMS = "is_teams";
 const IS_PLAYERS = "is_players";
@@ -18,15 +19,12 @@ export default function Football () {
   const [whichClick ,setWhichClick] = useState("");
   const [leagueId, setLeagueId] = useState("");
 
-  const dispatch = useDispatch();
-
-  const leagueList = useSelector((state) => state);
+  const leagueList = useSelector((state: RootState) => state.leagueReducer);
   
   const useDidMountEffect = (func:any, deps:any) => {
     const didMount = useRef(false);
 
     useEffect(() => {
-      console.log(didMount.current);
       if(didMount.current) {console.log("@@");func();}
       else didMount.current = true;
     }, deps);
@@ -45,7 +43,7 @@ export default function Football () {
   }, [leagueId]);
 
 const fetchLeagueData = async () => {
-  dispatch(await createAction());
+  createLeagueAction();
   setIsLoading(false);
 }
 
